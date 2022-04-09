@@ -274,6 +274,8 @@ nav {
 .form__label--loan {
   grid-row: 2;
 }
+/* Exception Over */
+
 .logout-timer {
   padding: 0 0.3rem;
   margin-top: 1.9rem;
