@@ -84,7 +84,7 @@ nav {
   grid-template-columns: 4fr 3fr;
   grid-template-rows: auto repeat(3, 15rem) auto;
   gap: 2rem;
-  opacity: 0;
+  /* opacity: 0; */
   transition: all 1s;
 }
 
@@ -215,7 +215,7 @@ nav {
   background-image: linear-gradient(to top left, #e52a5a, #ff585f);
 }
 
-.h2 {
+h2 {
   margin-bottom: 1.5rem;
   font-size: 1.7rem;
   font-weight: 600;
@@ -224,7 +224,7 @@ nav {
 
 .form {
   display: grid;
-  grid-template-columns: 2.5fr 2.5fr 2.5fr;
+  grid-template-columns: 3fr 3fr 2fr;
   grid-template-rows: auto auto;
   gap: 0.4rem 1rem;
 }
@@ -257,6 +257,7 @@ nav {
   border-radius: 0.7rem;
   font-size: 1.8rem;
   background-color: #fff;
+  width: 4rem;
   cursor: pointer;
   transition: all 0.3s;
 }
