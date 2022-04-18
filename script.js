@@ -32,7 +32,7 @@ const inputClosePin = document.querySelector('.form__input--pin')
 // Accounts
 const account1 = {
   owner: 'Aman Mandal',
-  movements: [200, 600, -327, 1400, -988, -762, 1500, -80],
+  movements: [200, 600, -327, 1400, -988, -362, 1500, -80],
   interestRate: 1.2, // in %
   pin: 1111,
 }
@@ -60,8 +60,8 @@ const account4 = {
 
 const accounts = [account1, account2, account3, account4]
 
+// Money Movements
 const displayMovements = function (movements) {
-
   // Emptying the pre-defined movements
   containerMovements.innerHTML = ''
 
@@ -78,8 +78,14 @@ const displayMovements = function (movements) {
     containerMovements.insertAdjacentHTML('afterbegin', html)
   })
 }
-displayMovements(account1.movements)
 
+// Balance
+const calcDisplayBalance = function (movements) {
+  const balance = movements.reduce((acc, mov) => acc + mov, 0)
+  labelBalance.textContent = `${balance}₤`
+}
+
+// Username
 const createUserNames = function (accounts) {
   accounts.forEach(function (account) {
     account.username = account.owner
@@ -89,3 +95,61 @@ const createUserNames = function (accounts) {
       .join('')
   })
 }
+createUserNames(accounts)
+
+// Summary
+const calcDisplaySummary = function (accounts) {
+  // Incoming
+  const incomes = accounts.movements
+    .filter(mov => mov > 0)
+    .reduce((acc, mov) => acc + mov, 0)
+  labelSumIn.textContent = `${incomes}₤`
+
+  // Outgoing
+  const outcomes = accounts.movements
+    .filter(mov => mov < 0)
+    .reduce((acc, mov) => acc + mov, 0)
+  labelSumOut.textContent = `${Math.abs(outcomes)}₤`
+
+  // Interest
+  const interest = accounts.movements
+    .filter(mov => mov > 0)
+    .map(deposit => (deposit * accounts.interestRate) / 100)
+    .filter(int => int >= 1)
+    .reduce((acc, int) => acc + int)
+  labelSumInterest.textContent = `${interest}₤`
+}
+
+let currentAccount
+// Event Handler
+btnLogin.addEventListener('click', function (event) {
+  event.preventDefault()
+
+  currentAccount = accounts.find(
+    acc => acc.username === inputLoginUsername.value
+  )
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    containerApp.style.opacity = 100
+
+    labelWelcome.textContent = `Welcome back, ${
+      currentAccount.owner.split(' ')[0]
+    }`
+
+    // Clear input fields
+    inputLoginPin.value = inputLoginUsername.value = ''
+    inputLoginPin.blur()
+
+    // Display Movements
+    displayMovements(currentAccount.movements)
+
+    // Display Balance
+    calcDisplayBalance(currentAccount.movements)
+
+    // Display Summary
+    calcDisplaySummary(currentAccount)
+  } else {
+    containerApp.style.opacity = 0
+    inputLoginPin.value = inputLoginUsername.value = ''
+    inputLoginPin.blur()
+  }
+})
