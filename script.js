@@ -32,48 +32,122 @@ const inputClosePin = document.querySelector('.form__input--pin')
 // Accounts
 const account1 = {
   owner: 'Aman Mandal',
-  movements: [200, 600, -327, 1400, -988, -362, 1500, -80],
+  movements: [200, 600, -327, 14000, -988, -362, 1500, -80],
   interestRate: 1.2, // in %
   pin: 1111,
+  movementsDates: [
+    '2019-11-18T21:31:17.178Z',
+    '2020-12-23T07:42:02.383Z',
+    '2021-02-28T09:15:04.904Z',
+    '2021-04-01T10:17:24.185Z',
+    '2022-04-14T14:11:59.604Z',
+    '2022-04-16T17:01:17.194Z',
+    '2022-04-17T23:36:17.929Z',
+    '2022-04-20T10:51:36.790Z',
+  ],
+  currency: 'EUR',
+  locale: 'pt-PT', // de-DE
 }
 
 const account2 = {
   owner: 'Tahera Khan',
-  movements: [350, 600, -400, -500, 1500, 1300, -1200, -450, 80],
+  movements: [350, 600, -400, -500, 15000, 1300, -1200, -450, 80],
   interestRate: 1.5,
   pin: 2222,
+  movementsDates: [
+    '2019-11-01T13:15:33.035Z',
+    '2019-11-30T09:48:16.867Z',
+    '2019-12-25T06:04:23.907Z',
+    '2020-01-25T14:18:46.235Z',
+    '2021-02-05T16:33:06.386Z',
+    '2021-04-10T14:43:26.374Z',
+    '2022-04-13T18:49:59.371Z',
+    '2022-04-17T12:01:20.894Z',
+    '2022-04-19T14:23:33.867Z',
+  ],
+  currency: 'USD',
+  locale: 'en-US',
 }
 
 const account3 = {
-  owner: 'Rohinish Singh',
-  movements: [5000, -3000, -1675, 2000, 300, -689, -90, 1200, -1100],
+  owner: 'Rahul Chavan',
+  movements: [5000, -3000, -1675, 10000, 300, -689, -90, 1200, -1100],
   interestRate: 0.7,
   pin: 3333,
+  movementsDates: [
+    '2019-11-18T21:31:17.178Z',
+    '2019-12-23T07:42:02.383Z',
+    '2020-01-28T09:15:04.904Z',
+    '2020-04-01T10:17:24.185Z',
+    '2020-05-08T14:11:59.604Z',
+    '2021-08-27T17:01:17.194Z',
+    '2022-04-12T23:36:17.929Z',
+    '2022-04-15T10:51:36.790Z',
+    '2022-04-17T14:23:33.867Z',
+  ],
+  currency: 'EUR',
+  locale: 'pt-PT', // de-DE
 }
 
 const account4 = {
   owner: 'Deepshika Singh',
-  movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
+  movements: [5000, 3400, -150, -790, -3210, -1000, 18500, -30],
   interestRate: 1.2,
   pin: 4444,
+  movementsDates: [
+    '2019-11-18T21:31:17.178Z',
+    '2020-12-23T07:42:02.383Z',
+    '2021-02-28T09:15:04.904Z',
+    '2021-04-01T10:17:24.185Z',
+    '2022-04-14T14:11:59.604Z',
+    '2022-04-16T17:01:17.194Z',
+    '2022-04-17T23:36:17.929Z',
+    '2022-04-20T10:51:36.790Z',
+  ],
+  currency: 'USD',
+  locale: 'en-US',
 }
 
+// accounts ARR
 const accounts = [account1, account2, account3, account4]
 
+// Formatting Date Function
+const formatMovementDate = function (date) {
+  const calcDaysPassed = (date1, date2) =>
+    Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24))
+
+  const dayPassed = calcDaysPassed(new Date(), date)
+  console.log(dayPassed)
+
+  if (dayPassed === 0) return 'Today'
+  if (dayPassed === 1) return 'Yesterday'
+  if (dayPassed <= 7) return `${dayPassed} days ago`
+  else {
+    return new Intl.DateTimeFormat('en-IN').format(date)
+  }
+}
+
 // Money Movements
-const displayMovements = function (movements, sort = false) {
+const displayMovements = function (acc, sort = false) {
   // Emptying the pre-defined movements
   containerMovements.innerHTML = ''
 
-  const movsSort = sort ? movements.slice().sort((a, b) => a - b) : movements
+  const movsSort = sort
+    ? acc.movements.slice().sort((a, b) => a - b)
+    : acc.movements
 
   movsSort.forEach(function (movement, index) {
     const type = movement > 0 ? 'deposit' : 'withdrawal'
+
+    const date = new Date(acc.movementsDates[index])
+    const displayDate = formatMovementDate(date)
+    console.log(displayDate)
 
     const html = `<div class="movements__row">
         <div class="movements__type movements__type--${type}">${
       index + 1
     } ${type}</div>
+        <div class="movements__date">${displayDate}</div>
         <div class="movements__value">${movement.toFixed(2)}₤</div>
         </div>
         `
@@ -102,6 +176,7 @@ createUserNames(accounts)
 
 // Summary
 const calcDisplaySummary = function (account) {
+
   // Incoming
   const incomes = account.movements
     .filter(mov => mov > 0)
@@ -125,7 +200,7 @@ const calcDisplaySummary = function (account) {
 
 const updateUI = function (acc) {
   // Display Movements
-  displayMovements(acc.movements)
+  displayMovements(acc)
 
   // Display Balance
   calcDisplayBalance(acc)
@@ -134,8 +209,15 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc)
 }
 
-let currentAccount
 // Event Handler
+let currentAccount
+
+// FAKE ALWAYS LOGGED IN
+// currentAccount = account1
+// updateUI(currentAccount)
+// containerApp.style.opacity = 100
+
+// Login
 btnLogin.addEventListener('click', function (event) {
   event.preventDefault()
 
@@ -148,6 +230,26 @@ btnLogin.addEventListener('click', function (event) {
     labelWelcome.textContent = `Welcome back, ${
       currentAccount.owner.split(' ')[0]
     }`
+
+    // Create Date
+    const now = new Date()
+
+    const options = {
+      hour: 'numeric',
+      minute: 'numeric',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      weekday: 'long',
+    }
+
+    // Navigator API
+    // const locale = navigator.language
+
+    // Formatting Date with Internationalization API
+    labelDate.textContent = new Intl.DateTimeFormat('en-IN', options).format(
+      now
+    )
 
     // Clear input fields
     inputLoginPin.value = inputLoginUsername.value = ''
@@ -175,8 +277,13 @@ btnTransfer.addEventListener('click', function (e) {
     currentAccount.balance >= amount &&
     receiverAcc?.username !== currentAccount.username
   ) {
+    // Doing the transfer
     currentAccount.movements.push(-amount)
     receiverAcc.movements.push(amount)
+
+    // Add transfer date
+    currentAccount.movementsDates.push(new Date().toISOString())
+    receiverAcc.movementsDates.push(new Date().toISOString())
 
     // Update UI
     updateUI(currentAccount)
@@ -191,7 +298,11 @@ btnLoan.addEventListener('click', function (e) {
   const amount = +inputLoanAmount.value
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
+    // Taking Loan
     currentAccount.movements.push(amount)
+
+    // Adding Loan Date
+    currentAccount.movementsDates.push(new Date().toISOString())
 
     // Update UI
     updateUI(currentAccount)
@@ -226,6 +337,6 @@ btnClose.addEventListener('click', function (e) {
 let sorted = false
 btnSort.addEventListener('click', function (e) {
   e.preventDefault()
-  displayMovements(currentAccount.movements, !sorted)
+  displayMovements(currentAccount, !sorted)
   sorted = !sorted
 })
