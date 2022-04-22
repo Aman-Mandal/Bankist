@@ -45,8 +45,8 @@ const account1 = {
     '2022-04-17T23:36:17.929Z',
     '2022-04-20T10:51:36.790Z',
   ],
-  currency: 'EUR',
-  locale: 'pt-PT', // de-DE
+  currency: 'INR',
+  locale: 'en-IN',
 }
 
 const account2 = {
@@ -86,7 +86,7 @@ const account3 = {
     '2022-04-17T14:23:33.867Z',
   ],
   currency: 'EUR',
-  locale: 'pt-PT', // de-DE
+  locale: 'en-GB',
 }
 
 const account4 = {
@@ -104,15 +104,15 @@ const account4 = {
     '2022-04-17T23:36:17.929Z',
     '2022-04-20T10:51:36.790Z',
   ],
-  currency: 'USD',
-  locale: 'en-US',
+  currency: 'EUR',
+  locale: '',
 }
 
 // accounts ARR
 const accounts = [account1, account2, account3, account4]
 
 // Formatting Date Function
-const formatMovementDate = function (date) {
+const formatMovementDate = function (date, locale) {
   const calcDaysPassed = (date1, date2) =>
     Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24))
 
@@ -123,8 +123,16 @@ const formatMovementDate = function (date) {
   if (dayPassed === 1) return 'Yesterday'
   if (dayPassed <= 7) return `${dayPassed} days ago`
   else {
-    return new Intl.DateTimeFormat('en-IN').format(date)
+    return new Intl.DateTimeFormat(locale).format(date)
   }
+}
+
+// Formatting Currency function
+const formatCur = function (value, locale, currency) {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(value)
 }
 
 // Money Movements
@@ -141,14 +149,16 @@ const displayMovements = function (acc, sort = false) {
 
     const date = new Date(acc.movementsDates[index])
     const displayDate = formatMovementDate(date)
-    console.log(displayDate)
+    // console.log(displayDate)
+
+    const formattedMov = formatCur(movement, acc.locale, acc.currency)
 
     const html = `<div class="movements__row">
         <div class="movements__type movements__type--${type}">${
       index + 1
     } ${type}</div>
         <div class="movements__date">${displayDate}</div>
-        <div class="movements__value">${movement.toFixed(2)}₤</div>
+        <div class="movements__value">${formattedMov}</div>
         </div>
         `
     containerMovements.insertAdjacentHTML('afterbegin', html)
@@ -159,7 +169,11 @@ const displayMovements = function (acc, sort = false) {
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0)
   // acc.balance = balance
-  labelBalance.textContent = `${acc.balance.toFixed(2)}₤`
+  labelBalance.textContent = `${formatCur(
+    acc.balance,
+    acc.locale,
+    acc.currency
+  )}`
 }
 
 // Username
@@ -176,18 +190,25 @@ createUserNames(accounts)
 
 // Summary
 const calcDisplaySummary = function (account) {
-
   // Incoming
   const incomes = account.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0)
-  labelSumIn.textContent = `${incomes.toFixed(2)}₤`
+  labelSumIn.textContent = `${formatCur(
+    incomes,
+    account.locale,
+    account.currency
+  )}`
 
   // Outgoing
   const outcomes = account.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0)
-  labelSumOut.textContent = `${Math.abs(outcomes).toFixed(2)}₤`
+  labelSumOut.textContent = `${formatCur(
+    Math.abs(outcomes),
+    account.locale,
+    account.currency
+  )}`
 
   // Interest
   const interest = account.movements
@@ -195,7 +216,11 @@ const calcDisplaySummary = function (account) {
     .map(deposit => (deposit * account.interestRate) / 100)
     .filter(int => int >= 1)
     .reduce((acc, int) => acc + int)
-  labelSumInterest.textContent = `${interest.toFixed(2)}₤`
+  labelSumInterest.textContent = `${formatCur(
+    interest,
+    account.locale,
+    account.currency
+  )}`
 }
 
 const updateUI = function (acc) {
@@ -213,9 +238,9 @@ const updateUI = function (acc) {
 let currentAccount
 
 // FAKE ALWAYS LOGGED IN
-// currentAccount = account1
-// updateUI(currentAccount)
-// containerApp.style.opacity = 100
+currentAccount = account1
+updateUI(currentAccount)
+containerApp.style.opacity = 100
 
 // Login
 btnLogin.addEventListener('click', function (event) {
@@ -247,9 +272,10 @@ btnLogin.addEventListener('click', function (event) {
     // const locale = navigator.language
 
     // Formatting Date with Internationalization API
-    labelDate.textContent = new Intl.DateTimeFormat('en-IN', options).format(
-      now
-    )
+    labelDate.textContent = new Intl.DateTimeFormat(
+      currentAccount.locale,
+      options
+    ).format(now)
 
     // Clear input fields
     inputLoginPin.value = inputLoginUsername.value = ''
