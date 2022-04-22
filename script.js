@@ -135,6 +135,34 @@ const formatCur = function (value, locale, currency) {
   }).format(value)
 }
 
+const startLogOutTimer = function () {
+  // Set Time to 5 minutes
+  let time = 300
+
+  // call back fun
+  const tick = function () {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0)
+    const sec = String(time % 60).padStart(2, 0)
+
+    // In each fun call, print the remaining time to the UI
+    labelTimer.textContent = `${min}:${sec}`
+
+    // When 0 secs, stop the timer and log out user
+    if (time === 0) {
+      clearInterval(timer)
+      labelWelcome.textContent = 'Log In to get started'
+      containerApp.style.opacity = 0
+    }
+    // Decrease the time with 1s
+    time--
+  }
+
+  // call the timer every second
+  tick()
+  const timer = setInterval(tick, 1000)
+  return timer
+}
+
 // Money Movements
 const displayMovements = function (acc, sort = false) {
   // Emptying the pre-defined movements
@@ -149,7 +177,6 @@ const displayMovements = function (acc, sort = false) {
 
     const date = new Date(acc.movementsDates[index])
     const displayDate = formatMovementDate(date)
-    // console.log(displayDate)
 
     const formattedMov = formatCur(movement, acc.locale, acc.currency)
 
@@ -169,6 +196,7 @@ const displayMovements = function (acc, sort = false) {
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0)
   // acc.balance = balance
+
   labelBalance.textContent = `${formatCur(
     acc.balance,
     acc.locale,
@@ -235,12 +263,12 @@ const updateUI = function (acc) {
 }
 
 // Event Handler
-let currentAccount
+let currentAccount, timer
 
-// FAKE ALWAYS LOGGED IN
-currentAccount = account1
-updateUI(currentAccount)
-containerApp.style.opacity = 100
+// // FAKE ALWAYS LOGGED IN
+// currentAccount = account1
+// updateUI(currentAccount)
+// containerApp.style.opacity = 100
 
 // Login
 btnLogin.addEventListener('click', function (event) {
@@ -281,6 +309,12 @@ btnLogin.addEventListener('click', function (event) {
     inputLoginPin.value = inputLoginUsername.value = ''
     inputLoginPin.blur()
 
+    // Resetting the timer
+    if (timer) {
+      clearInterval(timer)
+    }
+    timer = startLogOutTimer()
+
     // Update UI
     updateUI(currentAccount)
   } else {
@@ -290,6 +324,7 @@ btnLogin.addEventListener('click', function (event) {
   }
 })
 
+// Transfer
 btnTransfer.addEventListener('click', function (e) {
   e.preventDefault()
 
@@ -316,27 +351,38 @@ btnTransfer.addEventListener('click', function (e) {
   }
   inputTransferAmount.value = inputTransferTo.value = ''
   inputTransferAmount.blur()
+
+  // Resetting the timer
+  clearInterval(timer)
+  timer = startLogOutTimer()
 })
 
+// Loan
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault()
 
-  const amount = +inputLoanAmount.value
+  const amount = Math.floor(inputLoanAmount.value)
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
-    // Taking Loan
-    currentAccount.movements.push(amount)
+    setTimeout(function () {
+      // Add movement
+      currentAccount.movements.push(amount)
 
-    // Adding Loan Date
-    currentAccount.movementsDates.push(new Date().toISOString())
+      // Add loan date
+      currentAccount.movementsDates.push(new Date().toISOString())
 
-    // Update UI
-    updateUI(currentAccount)
+      // Update UI
+      updateUI(currentAccount)
+
+      // Reset timer
+      clearInterval(timer)
+      timer = startLogOutTimer()
+    }, 5000)
   }
-
   inputLoanAmount.value = ''
 })
 
+// Close Acc
 btnClose.addEventListener('click', function (e) {
   e.preventDefault()
 
@@ -361,6 +407,8 @@ btnClose.addEventListener('click', function (e) {
 
 // Variable for de-sorting
 let sorted = false
+
+// Sort
 btnSort.addEventListener('click', function (e) {
   e.preventDefault()
   displayMovements(currentAccount, !sorted)
