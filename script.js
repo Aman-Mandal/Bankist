@@ -265,11 +265,6 @@ const updateUI = function (acc) {
 // Event Handler
 let currentAccount, timer
 
-// // FAKE ALWAYS LOGGED IN
-// currentAccount = account1
-// updateUI(currentAccount)
-// containerApp.style.opacity = 100
-
 // Login
 btnLogin.addEventListener('click', function (event) {
   event.preventDefault()
